@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# Source tutorial clean functions
+. $WM_PROJECT_DIR/bin/tools/CleanFunctions
+
+# remove surface and features
+\rm -f constant/triSurface/plane.stl
+\rm -rf constant/extendedFeatureEdgeMesh/
+\rm -f constant/triSurface/plane.eMesh
+\rm -f constant/polyMesh/boundary
+rm -rf 0 > /dev/null 2>&1
+
+cleanCase

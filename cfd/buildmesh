@@ -1,0 +1,13 @@
+#!/bin/sh
+# Source tutorial run functions
+date
+. $WM_PROJECT_DIR/bin/tools/RunFunctions
+
+# copy flange surface from resources folder
+cp $FOAM_TUTORIALS/resources/geometry/plane.stl constant/triSurface/
+runApplication surfaceConvert constant/triSurface/plane.stl constant/triSurface/plane2.stl -clean -scale 0.2
+mv constant/triSurface/plane2.stl constant/triSurface/plane.stl
+runApplication blockMesh
+runApplication surfaceFeatureExtract
+runApplication snappyHexMesh -overwrite
+date

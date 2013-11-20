@@ -1,0 +1,37 @@
+#!/bin/sh
+cd ${0%/*} || exit 1    # run from this directory
+T="$(date +%s)"
+
+
+# Source tutorial run functions
+. $WM_PROJECT_DIR/bin/tools/RunFunctions
+
+# copy aircraft from plane folder
+cp ../planes/plane.stl constant/triSurface/
+runApplication surfaceConvert constant/triSurface/plane.stl constant/triSurface/cleanedplane.stl -clean -scale 0.2
+mv constant/triSurface/cleanedplane.stl constant/triSurface/plane.stl
+
+runApplication surfaceFeatureExtract
+runApplication blockMesh
+
+runApplication decomposePar
+runParallel snappyHexMesh 4 -overwrite
+
+#- For non-parallel running
+#cp -r 0.org 0 > /dev/null 2>&1
+
+#- For parallel running
+ls -d processor* | xargs -i rm -rf ./{}/0 $1
+ls -d processor* | xargs -i cp -r 0.org ./{}/0 $1
+
+runParallel patchSummary 4
+runParallel potentialFoam 4 -noFunctionObjects -writep
+runParallel $(getApplication) 4
+
+runApplication reconstructParMesh -constant
+runApplication reconstructPar -latestTime
+
+T="$(($(date +%s)-T))"
+echo "Time in seconds: ${T}"
+printf "Pretty format: %02d:%02d:%02d:%02d\n" "$((T/86400))" "$((T/3600%24))" "$((T/60%60))" "$((T%60))"
+
